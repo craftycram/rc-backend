@@ -1,4 +1,3 @@
-import devicePort from '../res/config.json';
 // imports
 const Serialport = require('serialport');
 const Readline = require('@serialport/parser-readline');
@@ -11,10 +10,12 @@ app.use(cors);
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
+const config = require('../res/config.json');
+
 // definitions
 // /dev/ttyACM0
 // /dev/cu.usbmodem14101
-const port = new Serialport(devicePort, {
+const port = new Serialport(config.port, {
   baudRate: 9600,
 });
 const parser = new Readline({
