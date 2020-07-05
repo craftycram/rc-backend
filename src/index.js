@@ -11,7 +11,9 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
 // definitions
-const port = new Serialport('/dev/cu.usbmodem14101', {
+// /dev/ttyACM0
+// /dev/cu.usbmodem14101
+const port = new Serialport('/dev/ttyACM0', {
   baudRate: 9600,
 });
 const parser = new Readline({
