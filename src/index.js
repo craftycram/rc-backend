@@ -3,6 +3,8 @@ const Serialport = require('serialport');
 const Readline = require('@serialport/parser-readline');
 const express = require('express');
 const cors = require('cors');
+const { exec } = require('child_process');
+const git = require('simple-git/promise');
 
 const app = express();
 app.use(cors);
@@ -38,6 +40,32 @@ port.on('open', () => {
     client.on('control-right', (message) => {
       console.log('received: %s', message);
       port.write(`r${message}\n`);
+    });
+
+    client.on('system', async (message) => {
+      console.log('received: %s', message);
+      switch (message) {
+        case 'shutdown':
+          console.log('shutting down');
+          exec('sudo shutdown now', (error) => {
+            console.log('Error shutting down!');
+            console.log(error);
+          });
+          break;
+        case 'restart':
+          console.log('shutting down');
+          exec('sudo reboot now', (error) => {
+            console.log('Error shutting down!');
+            console.log(error);
+          });
+          break;
+        case 'update':
+          await git(config.botPathCurrent).pull();
+          await process.exit();
+          break;
+        default:
+          break;
+      }
     });
 
     parser.on('data', (data) => {
