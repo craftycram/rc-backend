@@ -52,7 +52,7 @@ port.on('open', () => {
             console.log(error);
           });
           break;
-        case 'restart':
+        case 'reboot':
           console.log('shutting down');
           exec('sudo reboot now', (error) => {
             console.log('Error shutting down!');
