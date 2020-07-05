@@ -27,9 +27,13 @@ port.on('open', () => {
   console.log('Verbindung hergestellt.');
 
   io.on('connection', (client) => {
-    client.on('control', (message) => {
+    client.on('control-left', (message) => {
       console.log('received: %s', message);
-      port.write(`${message}\n`);
+      port.write(`l${message}\n`);
+    });
+    client.on('control-right', (message) => {
+      console.log('received: %s', message);
+      port.write(`r${message}\n`);
     });
 
     parser.on('data', (data) => {
