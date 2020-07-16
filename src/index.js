@@ -44,6 +44,7 @@ port.on('open', () => {
       room: ownRoom,
       port: process.env.CAMPORT,
     });
+    console.log('Registered bot room');
 
     // Eingehende Serialevents an zentralen SIO Server senden (für Debugging etc.)
     /*
