@@ -46,6 +46,7 @@ port.on('open', () => {
     });
 
     // Eingehende Serialevents an zentralen SIO Server senden (für Debugging etc.)
+    /*
     parser.on('data', (line) => {
       console.log(`Arduino: ${line}`);
       if (line !== lastData) {
@@ -53,6 +54,7 @@ port.on('open', () => {
         lastData = line;
       }
     });
+    */
 
     // Eingehende SIO Events an serialport via Arduino weiterleiten
     io.on('serialevent', (data) => {
