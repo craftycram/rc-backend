@@ -1,16 +1,12 @@
 // imports
 const Serialport = require('serialport');
 const Readline = require('@serialport/parser-readline');
-const express = require('express');
-const cors = require('cors');
 const { exec } = require('child_process');
 const git = require('simple-git/promise');
 
-const app = express();
-app.use(cors);
-
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+// DONTCHANGEME - AWS-Serververbindung via SSH Tunnel
+const io = require('socket.io-client')('http://localhost:5000');
+require('dotenv').config({ path: '/home/pi/ROBO_CONFIG.cfg' });
 
 const config = require('../res/config.json');
 
@@ -20,29 +16,60 @@ const config = require('../res/config.json');
 const port = new Serialport(config.port, {
   baudRate: 9600,
 });
+console.log('Port init');
+
 const parser = new Readline({
   delimiter: '\r\n',
 });
-
 // Init connection
 port.pipe(parser);
+
+let lastData = '';
+let isConnected = false;
+
+// eigener "Raumname" ist aus Robotername und "_control zusammengesetzt"
+const ownRoom = `${process.env.ROBOTNAME}_control`;
 
 // Event handler
 port.on('open', () => {
   // eslint-disable-next-line no-console
   console.log('Verbindung hergestellt.');
 
-  io.on('connection', (client) => {
-    client.on('control-left', (message) => {
+  io.on('connect', () => {
+    console.log('Connected to Master');
+    isConnected = true;
+
+    // Verbunden, registiere für jeweiligen Bot-"Raum"
+    io.emit('register_bot', {
+      room: ownRoom,
+      port: process.env.CAMPORT,
+    });
+
+    // Eingehende Serialevents an zentralen SIO Server senden (für Debugging etc.)
+    parser.on('data', (line) => {
+      console.log(`Arduino: ${line}`);
+      if (line !== lastData) {
+        io.to(ownRoom).emit('serialresponse', line);
+        lastData = line;
+      }
+    });
+
+    // Eingehende SIO Events an serialport via Arduino weiterleiten
+    io.on('serialevent', (data) => {
+      port.write(data.toString());
+      console.log(`Wrote ${data}`);
+    });
+
+    io.on('control-left', (message) => {
       console.log('received: %s', message);
       port.write(`l${message}\n`);
     });
-    client.on('control-right', (message) => {
+    io.on('control-right', (message) => {
       console.log('received: %s', message);
       port.write(`r${message}\n`);
     });
 
-    client.on('system', async (message) => {
+    io.on('system', async (message) => {
       console.log('received: %s', message);
       switch (message) {
         case 'shutdown':
@@ -68,15 +95,10 @@ port.on('open', () => {
       }
     });
 
-    parser.on('data', (data) => {
-      // eslint-disable-next-line no-console
-      console.log(`Arduino: ${data}`);
-      client.emit('arduino', data);
+    // Verbindungsabbruch handhaben
+    io.on('disconnect', () => {
+      isConnected = false;
+      console.log('Disconnected');
     });
-  });
-
-  // start our server
-  const server = http.listen(3001, () => {
-    console.log(`Server started on port ${server.address().port} :)`);
   });
 });
