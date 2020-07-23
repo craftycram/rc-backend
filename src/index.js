@@ -28,7 +28,7 @@ let lastData = '';
 let isConnected = false;
 
 // eigener "Raumname" ist aus Robotername und "_control zusammengesetzt"
-const ownRoom = `${process.env.ROBOTNAME}_control`;
+const ownRoom = 'marcbot_control';
 
 // Event handler
 port.on('open', () => {
