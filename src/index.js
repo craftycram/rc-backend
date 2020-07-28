@@ -47,15 +47,13 @@ port.on('open', () => {
     console.log('Registered bot room');
 
     // Eingehende Serialevents an zentralen SIO Server senden (für Debugging etc.)
-    /*
     parser.on('data', (line) => {
       console.log(`Arduino: ${line}`);
       if (line !== lastData) {
-        io.to(ownRoom).emit('serialresponse', line);
+        io.broadcast.to(ownRoom).emit('serialresponse', line);
         lastData = line;
       }
     });
-    */
 
     // Eingehende SIO Events an serialport via Arduino weiterleiten
     io.on('serialevent', (data) => {
