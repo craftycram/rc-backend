@@ -11,13 +11,6 @@ int statpin = 13; // StatusLed pin
 UltraSonicDistanceSensor ultrasonicLeft(11, 12);
 UltraSonicDistanceSensor ultrasonicRight(A4, A5);
 
-/*
-// UltraSonic pins
-#define trigPin1 11
-#define echoPin1 12
-#define trigPin2 A4
-#define echoPin2 A5
-*/
 
 // MonsterShield States
 #define BRAKEVCC 0
@@ -48,12 +41,6 @@ long OffTime = 3; //microseconds of off-time
 
 void setup() {
   Serial.begin(9600);
-
-  /*
-  // UltraSonic pin modes
-  pinMode(trigPin1, OUTPUT); // Sets the trigPin as an Output
-  pinMode(echoPin1, INPUT); // Sets the echoPin as an Input
-  */
 
   // MonsterShield status pin mode
   pinMode(statpin, OUTPUT);
@@ -196,8 +183,6 @@ void motorGo(uint8_t motor, uint8_t direct, uint8_t pwm)
 }
 
 void safetyCheck() {
-  // Serial.print("Links: ");
-  // Serial.println(ultrasonicLeft.measureDistanceCm());
   if (ultrasonicLeft.measureDistanceCm() <= stopDistance || ultrasonicRight.measureDistanceCm() <= stopDistance) {
     motorOff(0);
     motorOff(1);
@@ -210,49 +195,3 @@ void safetyCheck() {
     emergencyStop = false;
   }
 }
-/*
-void checkUltrasonic () {
-  // UltraSonic1
-  unsigned long currentMicros1 = micros();
-  if ((triggerState1 == LOW) && (currentMicros1 - previousMicros1 >= OffTime))
-  {
-    triggerState1 = HIGH; // turn it on
-    previousMicros1 = currentMicros1; // remember the time
-    digitalWrite(trigPin1, triggerState1); // update the actual trigger
-    Serial.print(distance1);
-    Serial.println("  cm (d1)");
-  }
-  else if ((triggerState1 == HIGH) && (currentMicros1 - previousMicros1 >= OnTime))
-  {
-    triggerState1 = LOW; // turn it off
-    previousMicros1 = currentMicros1; // remember the time
-    digitalWrite(trigPin1, triggerState1); // update the actual trigger
-  }
-  duration1 = pulseIn(echoPin1, HIGH);
-  distance1 = duration1 / 2 * 0.034;
-  Serial.print(distance1);
-  Serial.println("  cm (asdffg)");
-
-
-  *
-    // UltraSonic2
-    unsigned long currentMicros2 = micros();
-    if ((triggerState2 == LOW) && (currentMicros2 - previousMicros2 >= OffTime))
-    {
-      triggerState2 = HIGH; // turn it on
-      previousMicros2 = currentMicros2; // remember the time
-      digitalWrite(trigPin2, triggerState2); // update the actual trigger
-      Serial.print(distance2);
-      Serial.println("  cm (d2)");
-    }
-    else if ((triggerState2 == HIGH) && (currentMicros2 - previousMicros2 >= OnTime))
-    {
-      triggerState2 = LOW; // turn it off
-      previousMicros2 = currentMicros2; // remember the time
-      digitalWrite(trigPin2, triggerState2); // update the actual trigger
-    }
-    duration2 = pulseIn(echoPin2, HIGH);
-    distance2 = duration2 / 2 * 0.034;
-  *
-}
-*/
