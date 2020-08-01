@@ -50,7 +50,7 @@ port.on('open', () => {
     parser.on('data', (line) => {
       console.log(`Arduino: ${line}`);
       if (line !== lastData) {
-        io.broadcast.to(ownRoom).emit('serialresponse', line);
+        // io.emit('serialresponse', line);
         lastData = line;
       }
     });
