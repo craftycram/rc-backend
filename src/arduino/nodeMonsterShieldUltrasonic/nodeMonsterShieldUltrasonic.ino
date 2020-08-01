@@ -11,7 +11,6 @@ int statpin = 13; // StatusLed pin
 UltraSonicDistanceSensor ultrasonicLeft(11, 12);
 UltraSonicDistanceSensor ultrasonicRight(A4, A5);
 
-
 // MonsterShield States
 #define BRAKEVCC 0
 #define CW   1
@@ -20,7 +19,8 @@ UltraSonicDistanceSensor ultrasonicRight(A4, A5);
 #define CS_THRESHOLD 100
 
 //
-bool emergencyStop = false;
+bool limitLeft = false;
+bool limitRight = false;
 #define stopDistance 20
 
 // UltraSonic1 variables
@@ -41,9 +41,8 @@ long OffTime = 3; //microseconds of off-time
 
 void setup() {
   Serial.begin(9600);
-
   // MonsterShield status pin mode
-  pinMode(statpin, OUTPUT); 
+  pinMode(statpin, OUTPUT);
 
   // MonsterShield motor pin modes
   for (int i = 0; i < 2; i++)
@@ -67,70 +66,37 @@ String serialInput = "";
 void loop() {
   //checkUltrasonic();
   safetyCheck();
-  while (Serial.available() > 0 && !emergencyStop) {
+  while (Serial.available() > 0) {
 
     char serialChar = Serial.read();
 
-    if (isDigit(serialChar) || serialChar == 'l' || 'r' || '-') {
+    if (serialChar == 'w' || 'a' || 's' || 'd' || 'x') {
       serialInput += serialChar;
     }
 
-    bool forward = true;
 
     if (serialChar == '\n') {
-      if (serialInput.charAt(0) == 'l') {
-
-        serialInput.remove(0, 1);
-
-        if (serialInput.charAt(0) == '-') {
-          forward = false;
-          serialInput.remove(0, 1);
-        } else {
-          forward = true;
-        }
-
-        if (serialInput.toInt() > 0) {
-          if (forward) {
-            motorGo(0, CCW, serialInput.toInt());
-          } else {
-            motorGo(0, CW, serialInput.toInt());
-          }
-          Serial.println("left > " + serialInput);
-          Serial.println("left - forward > " + forward);
-        } else {
-          motorOff(0);
-          Serial.println("left > stop");
-        }
-      } else if (serialInput.charAt(0) == 'r') {
-        serialInput.remove(0, 1);
-
-        if (serialInput.charAt(0) == '-') {
-          forward = false;
-          serialInput.remove(0, 1);
-        } else {
-          forward = true;
-        }
-
-        if (serialInput.toInt() > 0) {
-          if (forward) {
-            motorGo(1, CW, serialInput.toInt());
-          } else {
-            motorGo(1, CCW, serialInput.toInt());
-          }
-          Serial.println("right > " + serialInput);
-          Serial.println("right - forward > " + forward);
-        } else {
-          motorOff(1);
-          Serial.println("right > stop");
-        }
+      if (serialInput.charAt(0) == 'w') {
+        motorGo(0, CCW, 100);
+        motorGo(1, CW, 100);
+      } else if (serialInput.charAt(0) == 'a') {
+        motorGo(0, CCW, 100);
+        motorGo(1, CCW, 100);
+      } else if (serialInput.charAt(0) == 'd') {
+        motorGo(0, CW, 100);
+        motorGo(1, CW, 100);
+      } else if (serialInput.charAt(0) == 's') {
+        motorGo(0, CW, 100);
+        motorGo(1, CCW, 100);
+      } else if (serialInput.charAt(0) == 'x') {
+        motorOff(0);
+        motorOff(1);
       }
 
       serialInput = "";
     }
   }
 }
-
-// Functions
 
 void motorOff(int motor)
 {
@@ -143,22 +109,6 @@ void motorOff(int motor)
   analogWrite(pwmpin[motor], 0);
 }
 
-/* motorGo() will set a motor going in a specific direction
-  the motor will continue going in that direction, at that speed
-  until told to do otherwise.
-
-  motor: this should be either 0 or 1, will selet which of the two
-  motors to be controlled
-
-  direct: Should be between 0 and 3, with the following result
-  0: Brake to VCC
-  1: Clockwise
-  2: CounterClockwise
-  3: Brake to GND
-
-  pwm: should be a value between ? and 1023, higher the number, the faster
-  it'll go
-*/
 void motorGo(uint8_t motor, uint8_t direct, uint8_t pwm)
 {
   if (motor <= 1)
@@ -183,15 +133,30 @@ void motorGo(uint8_t motor, uint8_t direct, uint8_t pwm)
 }
 
 void safetyCheck() {
-  if (ultrasonicLeft.measureDistanceCm() <= stopDistance || ultrasonicRight.measureDistanceCm() <= stopDistance) {
+  if (ultrasonicLeft.measureDistanceCm() <= stopDistance) {
     motorOff(0);
     motorOff(1);
-    Serial.println("Abstand zu klein! Stop!");
-    emergencyStop = true;
-    while (Serial.available() > 0) {
-      Serial.read();
-    }
+    Serial.println("distance-stop:left");
+    motorGo(0, CW, 80);
+    motorGo(1, CCW, 80);
+    delay(200);
+    motorOff(0);
+    motorOff(1);
+    limitLeft = true;
   } else {
-    emergencyStop = false;
+    limitLeft = false;
+  }
+  if (ultrasonicRight.measureDistanceCm() <= stopDistance) {
+    motorOff(0);
+    motorOff(1);
+    Serial.println("distance-stop:left");
+    motorGo(0, CW, 80);
+    motorGo(1, CCW, 80);
+    delay(200);
+    motorOff(0);
+    motorOff(1);
+    limitRight = true;
+  } else {
+    limitRight = false;
   }
 }
