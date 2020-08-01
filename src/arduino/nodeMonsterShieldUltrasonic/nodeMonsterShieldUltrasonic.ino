@@ -43,7 +43,7 @@ void setup() {
   Serial.begin(9600);
 
   // MonsterShield status pin mode
-  pinMode(statpin, OUTPUT);
+  pinMode(statpin, OUTPUT); 
 
   // MonsterShield motor pin modes
   for (int i = 0; i < 2; i++)

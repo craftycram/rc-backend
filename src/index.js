@@ -61,13 +61,9 @@ port.on('open', () => {
       console.log(`Wrote ${data}`);
     });
 
-    io.on('control-left', (message) => {
+    io.on('control', (message) => {
       console.log('received: %s', message);
-      port.write(`l${message}\n`);
-    });
-    io.on('control-right', (message) => {
-      console.log('received: %s', message);
-      port.write(`r${message}\n`);
+      port.write(`${message}\n`);
     });
 
     io.on('system', async (message) => {
