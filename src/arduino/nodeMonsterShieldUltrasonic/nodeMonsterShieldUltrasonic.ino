@@ -133,7 +133,17 @@ void motorGo(uint8_t motor, uint8_t direct, uint8_t pwm)
 }
 
 void safetyCheck() {
-  if (ultrasonicLeft.measureDistanceCm() <= stopDistance) {
+  double distanceLeft = ultrasonicLeft.measureDistanceCm();
+  double distanceRight = ultrasonicRight.measureDistanceCm();
+
+  if (distanceLeft == -1) {
+    distanceLeft = stopDistance + 10;
+  }
+  if (distanceRight == -1) {
+    distanceRight = stopDistance + 10;
+  }
+
+  if (distanceLeft <= stopDistance) {
     motorOff(0);
     motorOff(1);
     Serial.println("distance-stop:left");
@@ -146,7 +156,7 @@ void safetyCheck() {
   } else {
     limitLeft = false;
   }
-  if (ultrasonicRight.measureDistanceCm() <= stopDistance) {
+  if (distanceRight <= stopDistance) {
     motorOff(0);
     motorOff(1);
     Serial.println("distance-stop:left");
