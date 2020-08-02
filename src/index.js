@@ -75,6 +75,7 @@ port.on('open', () => {
         port.write(`${message}\n`);
         io.emit('thunder', false);
       } else {
+        console.log('emitting thunder to frontends');
         io.emit('thunder', true);
       }
     });
