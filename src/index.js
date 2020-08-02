@@ -9,6 +9,7 @@ const io = require('socket.io-client')('http://localhost:5000');
 require('dotenv').config({ path: '/home/pi/ROBO_CONFIG.cfg' });
 
 const config = require('../res/config.json');
+const { Socket } = require('socket.io-client');
 
 // definitions
 // /dev/ttyACM0
@@ -26,6 +27,7 @@ port.pipe(parser);
 
 let lastData = '';
 let isConnected = false;
+let thunder = false;
 
 // eigener "Raumname" ist aus Robotername und "_control zusammengesetzt"
 const ownRoom = 'marcbot_control';
@@ -61,9 +63,19 @@ port.on('open', () => {
       console.log(`Wrote ${data}`);
     });
 
+    io.on('toggleThunder', (message) => {
+      thunder = message;
+      io.emit('thunder', message);
+    });
+
     io.on('control', (message) => {
-      console.log('received: %s', message);
-      port.write(`${message}\n`);
+      if (!thunder) {
+        console.log('received: %s', message);
+        port.write(`${message}\n`);
+        io.emit('thunder', false);
+      } else {
+        io.emit('thunder', true);
+      }
     });
 
     io.on('system', async (message) => {
