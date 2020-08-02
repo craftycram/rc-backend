@@ -63,10 +63,10 @@ port.on('open', () => {
       console.log(`Wrote ${data}`);
     });
 
-    io.on('toggleThunder', (message) => {
-      console.log(`toggled thunder state: ${message}`);
-      thunder = message;
-      io.emit('thunder', message);
+    io.on('toggleThunder', () => {
+      console.log(`toggled thunder state: ${thunder} -> ${!thunder}`);
+      thunder = !thunder;
+      io.emit('thunder', thunder);
     });
 
     io.on('control', (message) => {
