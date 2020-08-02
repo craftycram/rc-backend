@@ -64,6 +64,7 @@ port.on('open', () => {
     });
 
     io.on('toggleThunder', (message) => {
+      console.log(`toggled thunder state: ${message}`);
       thunder = message;
       io.emit('thunder', message);
     });
